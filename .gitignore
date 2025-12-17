@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.DS_Store
+wandb/
+artifacts/
+outputs/
+checkpoints/
+model_cache/
+.env
+.ipynb_checkpoints/
