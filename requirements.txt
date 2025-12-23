@@ -1,0 +1,13 @@
+torch
+transformers
+wandb
+gradio
+opencv-python
+pillow
+numpy
+tqdm
+scikit-learn
+python-dotenv
+scikit-image
+scipy
+plotly
