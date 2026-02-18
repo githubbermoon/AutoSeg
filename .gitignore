@@ -8,3 +8,4 @@ checkpoints/
 model_cache/
 .env
 .ipynb_checkpoints/
+config/
