@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Gradio Viva Q&amp;A</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Gradio Viva Q&amp;A</h1>
+</header>
+<h1 id="viva-qa-gradio-frontend-ui-segt">🎓 Viva Q&amp;A — Gradio
+Frontend &amp; UI (segT)</h1>
+<blockquote>
+<p>Focused on the <strong>Gradio web interface</strong>, UI components,
+event handling, and frontend code in <code>app.py</code>.</p>
+</blockquote>
+<hr />
+<h2 id="gradio-basics">1. Gradio Basics</h2>
+<h3 id="q1.-what-is-gradio">Q1. What is Gradio?</h3>
+<p><strong>A.</strong> Gradio is an open-source Python library that lets
+you build <strong>interactive web UIs</strong> for ML models with
+minimal code. You define input/output components (images, sliders, JSON,
+plots) and wire them to a Python function — Gradio handles the HTML, JS,
+WebSocket communication, and server automatically.</p>
+<h3 id="q2.-why-gradio-over-flaskstreamlitreact">Q2. Why Gradio over
+Flask/Streamlit/React?</h3>
+<p><strong>A.</strong> | | Gradio | Flask | Streamlit | React |
+|—|—|—|—|—| | ML-native components | ✅ Image, Plot, JSON built-in | ❌
+Manual | Partial | ❌ Manual | | Lines of code for UI | ~70 | ~300+ |
+~100 | ~1000+ | | HuggingFace Spaces | ✅ Native deploy | ❌ | ❌ | ❌ |
+| Queueing | ✅ Built-in | Manual | Limited | Manual | | Interactivity |
+Event-driven | Request-response | Top-down rerun | Full control |</p>
+<p>Gradio was chosen for <strong>rapid prototyping</strong> and
+<strong>one-click cloud deployment</strong> on HuggingFace Spaces.</p>
+<h3 id="q3.-how-do-you-install-gradio">Q3. How do you install
+Gradio?</h3>
+<p><strong>A.</strong> <code>pip install gradio</code> — it’s listed in
+<code>requirements.txt</code>. Current project uses it as
+<code>import gradio as gr</code>.</p>
+<h3 id="q4.-how-do-you-launch-a-gradio-app">Q4. How do you launch a
+Gradio app?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>demo <span class="op">=</span> create_demo()          <span class="co"># Returns a gr.Blocks instance</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>demo.queue().launch(share<span class="op">=</span><span class="va">False</span>)</span></code></pre></div>
+<ul>
+<li><code>.queue()</code> enables request queueing for concurrent
+users.</li>
+<li><code>.launch(share=False)</code> starts a local server at
+<code>http://127.0.0.1:7860</code>.</li>
+<li>Setting <code>share=True</code> would create a temporary public URL
+via Gradio’s tunnel.</li>
+</ul>
+<hr />
+<h2 id="ui-structure-app.py-code">2. UI Structure (<code>app.py</code>
+Code)</h2>
+<h3
+id="q5.-what-gradio-api-mode-does-your-app-use-interface-or-blocks">Q5.
+What Gradio API mode does your app use — Interface or Blocks?</h3>
+<p><strong>A.</strong> <strong><code>gr.Blocks</code></strong> — the
+more flexible, lower-level API. Unlike <code>gr.Interface</code> (which
+is a simple function→UI wrapper), <code>gr.Blocks</code> allows:</p>
+<ul>
+<li>Custom layouts with <code>gr.Row()</code> and
+<code>gr.Column()</code>.</li>
+<li>Accordions, tabs, multiple buttons.</li>
+<li>Multiple inputs/outputs wired to different functions.</li>
+<li>Fine-grained control over component placement.</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> gr.Blocks(title<span class="op">=</span><span class="st">&quot;Terrain Safety Analysis&quot;</span>) <span class="im">as</span> demo:</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ... all components defined here</span></span></code></pre></div>
+<h3 id="q6.-explain-the-layout-structure-of-the-ui.">Q6. Explain the
+layout structure of the UI.</h3>
+<p><strong>A.</strong> The UI uses a <strong>two-column
+layout</strong>:</p>
+<pre><code>┌───────────────────────────────────────────────┐
+│  gr.Markdown (Title + Description)            │
+├──────────────┬────────────────────────────────┤
+│  Column 1    │   Column 2 (scale=2, wider)    │
+│  (scale=1)   │                                │
+│              │  ┌──────┬──────┬──────┐        │
+│  Image Input │  │ HUD  │Depth │ Mask │  Row   │
+│              │  └──────┴──────┴──────┘        │
+│  Settings    │                                │
+│  (Accordion) │  3D Terrain Plot               │
+│              │                                │
+│  Mapping JSON│  Safety Score Label            │
+│  (Accordion) │                                │
+│              │  Detailed Stats JSON           │
+│  Advanced    │                                │
+│  (Accordion) │                                │
+│              │                                │
+│  [Analyze]   │                                │
+│   Button     │                                │
+└──────────────┴────────────────────────────────┘</code></pre>
+<p>Code:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> gr.Row():</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> gr.Column(scale<span class="op">=</span><span class="dv">1</span>):    <span class="co"># Left panel — inputs</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>        ...</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> gr.Column(scale<span class="op">=</span><span class="dv">2</span>):    <span class="co"># Right panel — outputs (2× wider)</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        ...</span></code></pre></div>
+<h3 id="q7.-what-does-scale1-vs-scale2-mean-in-columns">Q7. What does
+<code>scale=1</code> vs <code>scale=2</code> mean in columns?</h3>
+<p><strong>A.</strong> The <code>scale</code> parameter controls
+<strong>relative width</strong>. Column with <code>scale=2</code> gets
+<strong>twice</strong> the horizontal space of <code>scale=1</code>. So
+the output panel (images, plots, stats) gets 2/3 of the width, and the
+input panel gets 1/3.</p>
+<h3 id="q8.-what-is-gr.accordion-and-how-is-it-used">Q8. What is
+<code>gr.Accordion</code> and how is it used?</h3>
+<p><strong>A.</strong> <code>gr.Accordion</code> creates a
+<strong>collapsible section</strong> in the UI. It visually groups
+related controls:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> gr.Accordion(<span class="st">&quot;Settings&quot;</span>, <span class="bu">open</span><span class="op">=</span><span class="va">True</span>):       <span class="co"># Expanded by default</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    model_selector <span class="op">=</span> gr.Dropdown(...)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    opacity_slider <span class="op">=</span> gr.Slider(...)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> gr.Accordion(<span class="st">&quot;Class Mapping (JSON)&quot;</span>, <span class="bu">open</span><span class="op">=</span><span class="va">False</span>):  <span class="co"># Collapsed by default</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    mapping_editor <span class="op">=</span> gr.Code(...)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> gr.Accordion(<span class="st">&quot;Advanced Features&quot;</span>, <span class="bu">open</span><span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    enable_depth <span class="op">=</span> gr.Checkbox(...)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    ...</span></code></pre></div>
+<p><code>open=True/False</code> controls whether the section starts
+expanded or collapsed.</p>
+<hr />
+<h2 id="input-components">3. Input Components</h2>
+<h3 id="q9.-list-all-input-components-in-the-app.">Q9. List all input
+components in the app.</h3>
+<p><strong>A.</strong></p>
+<table>
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 34%" />
+<col style="width: 18%" />
+<col style="width: 31%" />
+</colgroup>
+<thead>
+<tr>
+<th>Component</th>
+<th>Gradio Type</th>
+<th>Variable</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Image upload</td>
+<td><code>gr.Image(type="pil")</code></td>
+<td><code>input_image</code></td>
+<td>User uploads terrain image</td>
+</tr>
+<tr>
+<td>Model selector</td>
+<td><code>gr.Dropdown</code></td>
+<td><code>model_selector</code></td>
+<td>Choose B0 or B2</td>
+</tr>
+<tr>
+<td>HUD opacity</td>
+<td><code>gr.Slider(0, 1)</code></td>
+<td><code>opacity_slider</code></td>
+<td>Control overlay transparency</td>
+</tr>
+<tr>
+<td>JSON editor</td>
+<td><code>gr.Code(language="json")</code></td>
+<td><code>mapping_editor</code></td>
+<td>Edit safe/hazard class lists</td>
+</tr>
+<tr>
+<td>Enable Depth</td>
+<td><code>gr.Checkbox</code></td>
+<td><code>enable_depth</code></td>
+<td>Toggle depth estimation</td>
+</tr>
+<tr>
+<td>Depth Model</td>
+<td><code>gr.Dropdown</code></td>
+<td><code>depth_size</code></td>
+<td>Small or Base depth model</td>
+</tr>
+<tr>
+<td>Depth Opacity</td>
+<td><code>gr.Slider(0, 1)</code></td>
+<td><code>depth_opacity</code></td>
+<td>Depth overlay transparency</td>
+</tr>
+<tr>
+<td>Enable Path</td>
+<td><code>gr.Checkbox</code></td>
+<td><code>enable_path</code></td>
+<td>Toggle A* pathfinding</td>
+</tr>
+<tr>
+<td>Show 3D</td>
+<td><code>gr.Checkbox</code></td>
+<td><code>show_3d</code></td>
+<td>Toggle 3D visualization</td>
+</tr>
+<tr>
+<td>Analyze button</td>
+<td><code>gr.Button(variant="primary")</code></td>
+<td><code>run_btn</code></td>
+<td>Trigger processing</td>
+</tr>
+</tbody>
+</table>
+<h3 id="q10.-why-is-typepil-used-for-the-image-input">Q10. Why is
+<code>type="pil"</code> used for the image input?</h3>
+<p><strong>A.</strong> <code>gr.Image(type="pil")</code> tells Gradio to
+pass the uploaded image as a <code>PIL.Image</code> object to the
+callback function. Other options are:</p>
+<ul>
+<li><code>type="numpy"</code> → numpy array (H, W, 3)</li>
+<li><code>type="filepath"</code> → path string to a temp file</li>
+</ul>
+<p>We use <code>PIL</code> because:</p>
+<ol type="1">
+<li><code>SegformerFeatureExtractor</code> accepts PIL images
+directly.</li>
+<li>PIL provides <code>.size</code> (W, H) and easy conversion
+methods.</li>
+<li>All our utility functions (<code>create_hud</code>,
+<code>create_depth_overlay</code>) work with PIL.</li>
+</ol>
+<h3 id="q11.-what-is-gr.code-and-why-use-it-for-the-mapping-editor">Q11.
+What is <code>gr.Code</code> and why use it for the mapping editor?</h3>
+<p><strong>A.</strong> <code>gr.Code</code> renders a
+<strong>syntax-highlighted code editor</strong> in the UI. We use it
+with <code>language="json"</code> to provide a proper JSON editing
+experience for the safe/hazard class mapping:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>mapping_editor <span class="op">=</span> gr.Code(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    value<span class="op">=</span>json.dumps(DEFAULT_MAPPING, indent<span class="op">=</span><span class="dv">2</span>),</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    language<span class="op">=</span><span class="st">&quot;json&quot;</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    label<span class="op">=</span><span class="st">&quot;Safe/Hazard Definition&quot;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>This allows users to <strong>modify the safety definitions at
+runtime</strong> — e.g., moving “snow” from hazard to safe for a
+ski-navigation use case.</p>
+<h3
+id="q12.-explain-the-gr.dropdown-component-for-model-selection.">Q12.
+Explain the <code>gr.Dropdown</code> component for model selection.</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>model_selector <span class="op">=</span> gr.Dropdown(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    choices<span class="op">=</span><span class="bu">list</span>(MODELS.keys()),             <span class="co"># [&quot;SegFormer B0 (Fast)&quot;, &quot;SegFormer B2 (Balanced)&quot;]</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    value<span class="op">=</span><span class="st">&quot;SegFormer B0 (Fast)&quot;</span>,             <span class="co"># Default selection</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    label<span class="op">=</span><span class="st">&quot;Model Version&quot;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>The dropdown passes the <strong>selected key string</strong> to the
+callback. Inside <code>process_image()</code>, this key is mapped to the
+actual HuggingFace model ID:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>MODELS <span class="op">=</span> {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;SegFormer B0 (Fast)&quot;</span>: <span class="st">&quot;nvidia/segformer-b0-finetuned-ade-512-512&quot;</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;SegFormer B2 (Balanced)&quot;</span>: <span class="st">&quot;nvidia/segformer-b2-finetuned-ade-512-512&quot;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>model_name <span class="op">=</span> MODELS[model_key]  <span class="co"># Resolves human-readable name → model ID</span></span></code></pre></div>
+<h3 id="q13.-how-does-the-gr.slider-work">Q13. How does the
+<code>gr.Slider</code> work?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>opacity_slider <span class="op">=</span> gr.Slider(<span class="dv">0</span>, <span class="dv">1</span>, value<span class="op">=</span><span class="fl">0.4</span>, label<span class="op">=</span><span class="st">&quot;HUD Opacity&quot;</span>)</span></code></pre></div>
+<ul>
+<li><code>0, 1</code> → min and max values.</li>
+<li><code>value=0.4</code> → default position.</li>
+<li>Returns a <strong>float</strong> to the callback.</li>
+<li>Used 3 times: HUD opacity (0.4), depth opacity (0.5), and implicitly
+constraining visual blend strength.</li>
+</ul>
+<h3 id="q14.-how-does-gr.checkbox-work">Q14. How does
+<code>gr.Checkbox</code> work?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>enable_depth <span class="op">=</span> gr.Checkbox(label<span class="op">=</span><span class="st">&quot;Enable Depth&quot;</span>, value<span class="op">=</span><span class="va">False</span>)</span></code></pre></div>
+<p>Returns a <strong>boolean</strong>
+(<code>True</code>/<code>False</code>) to the callback. Default is
+<code>False</code> (unchecked). Three checkboxes control optional
+features: depth estimation, pathfinding, and 3D view. These are
+independent toggles — users can enable any combination.</p>
+<hr />
+<h2 id="output-components">4. Output Components</h2>
+<h3 id="q15.-list-all-output-components.">Q15. List all output
+components.</h3>
+<p><strong>A.</strong></p>
+<table>
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 26%" />
+<col style="width: 18%" />
+<col style="width: 37%" />
+</colgroup>
+<thead>
+<tr>
+<th>Component</th>
+<th>Gradio Type</th>
+<th>Variable</th>
+<th>Displays</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HUD overlay</td>
+<td><code>gr.Image(type="pil")</code></td>
+<td><code>output_hud</code></td>
+<td>Green/red safety overlay + path</td>
+</tr>
+<tr>
+<td>Depth overlay</td>
+<td><code>gr.Image(type="pil")</code></td>
+<td><code>output_depth</code></td>
+<td>Depth heatmap overlay</td>
+</tr>
+<tr>
+<td>Raw mask</td>
+<td><code>gr.Image(type="pil")</code></td>
+<td><code>output_mask</code></td>
+<td>Integer segmentation mask</td>
+</tr>
+<tr>
+<td>3D terrain</td>
+<td><code>gr.Plot</code></td>
+<td><code>output_3d</code></td>
+<td>Interactive Plotly 3D mesh</td>
+</tr>
+<tr>
+<td>Safety score</td>
+<td><code>gr.Label</code></td>
+<td><code>score_display</code></td>
+<td>“Safety Score: 73.21%”</td>
+</tr>
+<tr>
+<td>Detailed stats</td>
+<td><code>gr.JSON</code></td>
+<td><code>output_json</code></td>
+<td>Full stats dictionary</td>
+</tr>
+</tbody>
+</table>
+<h3 id="q16.-what-is-gr.plot-and-how-does-it-render-plotly-figures">Q16.
+What is <code>gr.Plot</code> and how does it render Plotly figures?</h3>
+<p><strong>A.</strong> <code>gr.Plot</code> renders <strong>interactive
+Plotly figures</strong> directly in the browser. When the callback
+returns a <code>plotly.graph_objects.Figure</code> object, Gradio
+serializes it to JSON and renders it using Plotly.js on the client side.
+Users can rotate, zoom, and pan the 3D terrain mesh interactively.</p>
+<h3 id="q17.-what-is-gr.json-and-what-does-it-display">Q17. What is
+<code>gr.JSON</code> and what does it display?</h3>
+<p><strong>A.</strong> <code>gr.JSON</code> renders a <strong>formatted,
+collapsible JSON viewer</strong> in the UI. Our callback returns a
+dictionary:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;safety_score&quot;</span>: <span class="fl">73.21</span>,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;safe_pixels&quot;</span>: <span class="dv">195432</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;hazard_pixels&quot;</span>: <span class="dv">72104</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;total_pixels&quot;</span>: <span class="dv">267536</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;safe_percentage&quot;</span>: <span class="fl">73.05</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;hazard_percentage&quot;</span>: <span class="fl">26.95</span>,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;class_counts&quot;</span>: {<span class="st">&quot;grass&quot;</span>: <span class="dv">120000</span>, <span class="st">&quot;water&quot;</span>: <span class="dv">50000</span>, ...},</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;top1_class&quot;</span>: <span class="st">&quot;grass&quot;</span>,</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;mean_confidence&quot;</span>: <span class="fl">0.8734</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Gradio automatically renders this as a pretty-printed, expandable
+JSON tree.</p>
+<h3 id="q18.-what-is-gr.label">Q18. What is <code>gr.Label</code>?</h3>
+<p><strong>A.</strong> <code>gr.Label</code> displays a <strong>simple
+text label</strong>, typically used for classification results or
+scores. We use it to show <code>"Safety Score: 73.21%"</code>
+prominently. It’s more visually prominent than plain text.</p>
+<hr />
+<h2 id="event-handling-callback">5. Event Handling &amp; Callback</h2>
+<h3
+id="q19.-how-is-the-button-click-wired-to-the-processing-function">Q19.
+How is the button click wired to the processing function?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>run_btn.click(</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    process_image,                   <span class="co"># The callback function</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    inputs<span class="op">=</span>[                         <span class="co"># 9 input components</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>        input_image, model_selector, opacity_slider,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        mapping_editor, enable_depth, enable_path,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        show_3d, depth_size, depth_opacity</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    ],</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    outputs<span class="op">=</span>[                        <span class="co"># 6 output components</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        output_hud, output_depth, output_mask,</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>        output_json, score_display, output_3d</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>When the user clicks “Analyze Terrain”, Gradio:</p>
+<ol type="1">
+<li>Reads the current values of all 9 input components.</li>
+<li>Calls
+<code>process_image(image, model_key, opacity, mapping_json_str, enable_depth, enable_path, show_3d, depth_model_size, depth_opacity)</code>.</li>
+<li>The function returns 6 values (in order).</li>
+<li>Each return value is sent to the corresponding output
+component.</li>
+</ol>
+<h3 id="q20.-what-is-the-function-signature-of-process_image">Q20. What
+is the function signature of <code>process_image()</code>?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> process_image(image, model_key, opacity, mapping_json_str,</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>                  enable_depth, enable_path, show_3d,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>                  depth_model_size, depth_opacity):</span></code></pre></div>
+<p><strong>Parameters</strong> (matched 1:1 with <code>inputs</code>
+list): | Parameter | Type | From Component | |—|—|—| |
+<code>image</code> | PIL.Image | <code>input_image</code> | |
+<code>model_key</code> | str | <code>model_selector</code> | |
+<code>opacity</code> | float | <code>opacity_slider</code> | |
+<code>mapping_json_str</code> | str | <code>mapping_editor</code> | |
+<code>enable_depth</code> | bool | <code>enable_depth</code> | |
+<code>enable_path</code> | bool | <code>enable_path</code> | |
+<code>show_3d</code> | bool | <code>show_3d</code> | |
+<code>depth_model_size</code> | str | <code>depth_size</code> | |
+<code>depth_opacity</code> | float | <code>depth_opacity</code> |</p>
+<p><strong>Returns</strong>:
+<code>(hud_image, depth_overlay, mask_colored, json_output, score_text, fig_3d)</code>
+— 6 values for 6 output components.</p>
+<h3 id="q21.-what-happens-if-the-user-doesnt-upload-an-image">Q21. What
+happens if the user doesn’t upload an image?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> image <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="va">None</span>, <span class="va">None</span>, <span class="va">None</span>, <span class="va">None</span>, <span class="va">None</span>, <span class="st">&quot;Please upload an image.&quot;</span>, <span class="va">None</span></span></code></pre></div>
+<p>The function returns <code>None</code> for all image/plot outputs and
+a text message for the score label. Gradio handles <code>None</code>
+gracefully — it simply shows empty/blank components.</p>
+<h3 id="q22.-how-is-the-json-mapping-parsed-safely">Q22. How is the JSON
+mapping parsed safely?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    mapping_config <span class="op">=</span> json.loads(mapping_json_str)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span>:</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    mapping_config <span class="op">=</span> DEFAULT_MAPPING</span></code></pre></div>
+<p>If the user types invalid JSON in the editor,
+<code>json.loads()</code> throws an exception — the bare
+<code>except</code> catches it and falls back to the default mapping.
+This prevents the app from crashing on malformed user input.</p>
+<h3
+id="q23.-how-does-the-callback-handle-optional-features-depth-path-3d">Q23.
+How does the callback handle optional features (depth, path, 3D)?</h3>
+<p><strong>A.</strong> Conditional logic using the boolean
+checkboxes:</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> enable_depth <span class="kw">or</span> enable_path:</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    depth_pipe <span class="op">=</span> model_utils.load_depth_model(...)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    depth_map_norm <span class="op">=</span> model_utils.estimate_depth(image, depth_pipe)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> enable_path <span class="kw">and</span> depth_map_norm <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    path_coords <span class="op">=</span> model_utils.compute_path(safety_mask, depth_map_norm)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="cf">elif</span> enable_path:</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    path_coords <span class="op">=</span> model_utils.compute_path(safety_mask, <span class="va">None</span>)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> enable_depth <span class="kw">and</span> depth_map_norm <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    depth_overlay <span class="op">=</span> model_utils.create_depth_overlay(...)</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> show_3d <span class="kw">and</span> depth_map_norm <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    fig_3d <span class="op">=</span> model_utils.create_3d_terrain(...)</span></code></pre></div>
+<p>Each feature is computed only if its checkbox is checked. If depth
+fails but pathfinding is enabled, pathfinding still runs using the
+safety mask alone (without slope penalties).</p>
+<hr />
+<h2 id="examples-samples">6. Examples &amp; Samples</h2>
+<h3 id="q24.-how-are-example-images-provided">Q24. How are example
+images provided?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>gr.Examples(</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    examples<span class="op">=</span>[[<span class="st">&quot;assets/sample.jpg&quot;</span>]],</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    inputs<span class="op">=</span>input_image</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p><code>gr.Examples</code> renders clickable example thumbnails below
+the UI. When clicked, the example image is loaded into
+<code>input_image</code>. The <code>examples</code> parameter is a list
+of lists — each inner list provides values for the specified
+<code>inputs</code> components.</p>
+<h3 id="q25.-where-are-sample-images-stored">Q25. Where are sample
+images stored?</h3>
+<p><strong>A.</strong> In the <code>assets/</code> directory:
+<code>assets/sample.jpg</code>. This is a pre-packaged terrain image
+that demonstrates the app’s capabilities without requiring users to find
+their own images.</p>
+<hr />
+<h2 id="configuration-state">7. Configuration &amp; State</h2>
+<h3 id="q26.-what-is-app_config-and-how-is-it-used">Q26. What is
+<code>APP_CONFIG</code> and how is it used?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>APP_CONFIG <span class="op">=</span> {</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;system_os&quot;</span>: platform.system(),        <span class="co"># &quot;Darwin&quot;, &quot;Linux&quot;, etc.</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;python_version&quot;</span>: sys.version.split()[<span class="dv">0</span>],  <span class="co"># &quot;3.10.12&quot;</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;torch_version&quot;</span>: torch.__version__,    <span class="co"># &quot;2.1.0&quot;</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;device&quot;</span>: <span class="st">&quot;cuda&quot;</span> <span class="cf">if</span> torch.cuda.is_available() <span class="cf">else</span> <span class="st">&quot;cpu&quot;</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>This dictionary captures system info at startup and is passed to
+<code>wandb.init(config=APP_CONFIG)</code> so every W&amp;B run records
+the environment it was run on. Useful for debugging performance
+differences across machines.</p>
+<h3 id="q27.-how-is-the-models-dictionary-structured">Q27. How is the
+<code>MODELS</code> dictionary structured?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>MODELS <span class="op">=</span> {</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;SegFormer B0 (Fast)&quot;</span>: <span class="st">&quot;nvidia/segformer-b0-finetuned-ade-512-512&quot;</span>,</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;SegFormer B2 (Balanced)&quot;</span>: <span class="st">&quot;nvidia/segformer-b2-finetuned-ade-512-512&quot;</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Keys are <strong>human-readable names</strong> shown in the dropdown.
+Values are <strong>HuggingFace model IDs</strong> used for
+downloading/loading. This decouples the UI labels from the actual model
+identifiers.</p>
+<h3 id="q28.-how-is-the-default-mapping-defined">Q28. How is the default
+mapping defined?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>DEFAULT_MAPPING <span class="op">=</span> {</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;safe&quot;</span>: model_utils.SAFE_LABELS_DEFAULT,</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;hazard&quot;</span>: model_utils.HAZARD_LABELS_DEFAULT</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>It references the keyword lists from <code>model_utils.py</code> and
+is serialized to JSON for the code editor’s default value:</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>mapping_editor <span class="op">=</span> gr.Code(</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    value<span class="op">=</span>json.dumps(DEFAULT_MAPPING, indent<span class="op">=</span><span class="dv">2</span>),  <span class="co"># Pretty-printed JSON string</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    ...</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<hr />
+<h2 id="wb-integration-in-the-frontend">8. W&amp;B Integration in the
+Frontend</h2>
+<h3 id="q29.-how-is-wb-initialized-in-the-app">Q29. How is W&amp;B
+initialized in the app?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>INFERENCE_TABLE <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    wandb.init(project<span class="op">=</span><span class="st">&quot;terrain-safety-v1&quot;</span>, job_type<span class="op">=</span><span class="st">&quot;inference&quot;</span>, config<span class="op">=</span>APP_CONFIG)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    INFERENCE_TABLE <span class="op">=</span> wandb.Table(columns<span class="op">=</span>[</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;model&quot;</span>, <span class="st">&quot;score&quot;</span>, <span class="st">&quot;safe_pct&quot;</span>, <span class="st">&quot;hazard_pct&quot;</span>,</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;time_ms&quot;</span>, <span class="st">&quot;top_class&quot;</span>, <span class="st">&quot;confidence&quot;</span>, <span class="st">&quot;image_ref&quot;</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    ])</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;Warning: W&amp;B init failed: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">. Logging disabled.&quot;</span>)</span></code></pre></div>
+<ul>
+<li>Runs at <strong>import time</strong> (module level), so a single
+W&amp;B run spans the app’s lifetime.</li>
+<li>If <code>WANDB_API_KEY</code> is missing or W&amp;B is unreachable,
+the <code>except</code> block catches the error and logging is silently
+disabled. The app still functions normally.</li>
+<li><code>INFERENCE_TABLE</code> is a global <code>wandb.Table</code>
+that accumulates one row per inference call.</li>
+</ul>
+<h3 id="q30.-how-does-the-callback-log-to-wb">Q30. How does the callback
+log to W&amp;B?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    meta <span class="op">=</span> {</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;model_id&quot;</span>: model_name,</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;inference_time_ms&quot;</span>: inference_time_ms,</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;image_size&quot;</span>: image.size,</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;device&quot;</span>: device,</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;depth_enabled&quot;</span>: enable_depth,</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;path_enabled&quot;</span>: enable_path</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>    model_utils.log_inference_to_wandb(image, hud_image, stats, meta, table<span class="op">=</span>INFERENCE_TABLE)</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;W&amp;B Log failed: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">&quot;</span>)</span></code></pre></div>
+<p>Wrapped in try-except so a logging failure never crashes the
+user-facing app.</p>
+<hr />
+<h2 id="deployment-specifics">9. Deployment Specifics</h2>
+<h3 id="q31.-how-do-you-deploy-on-hugging-face-spaces">Q31. How do you
+deploy on Hugging Face Spaces?</h3>
+<p><strong>A.</strong></p>
+<ol type="1">
+<li>Create a new Space (SDK: Gradio, Hardware: CPU Basic).</li>
+<li>Upload <code>app.py</code>, <code>model_utils.py</code>,
+<code>requirements.txt</code>.</li>
+<li>Optionally add <code>WANDB_API_KEY</code> as a Space secret.</li>
+<li>The Space auto-builds, installs deps, and runs
+<code>python app.py</code>.</li>
+</ol>
+<h3 id="q32.-what-does-.queue-do">Q32. What does <code>.queue()</code>
+do?</h3>
+<p><strong>A.</strong> <code>demo.queue()</code> enables <strong>request
+queueing</strong>. Without it, if two users click “Analyze”
+simultaneously, one request might fail or interfere. With queueing,
+requests are serialized — each waits in a FIFO queue and is processed
+one at a time. This is critical for GPU-bound inference where concurrent
+model calls could cause OOM errors.</p>
+<h3 id="q33.-what-does-launchsharefalse-vs-launchsharetrue-do">Q33. What
+does <code>launch(share=False)</code> vs <code>launch(share=True)</code>
+do?</h3>
+<p><strong>A.</strong></p>
+<ul>
+<li><code>share=False</code> → Local server only at
+<code>http://127.0.0.1:7860</code>. Only accessible from the same
+machine.</li>
+<li><code>share=True</code> → Gradio creates a <strong>temporary public
+URL</strong> (e.g., <code>https://xxxx.gradio.live</code>) via a tunnel.
+Useful for demos — anyone with the link can access the app. The URL
+expires after 72 hours.</li>
+</ul>
+<h3 id="q34.-what-port-does-the-app-use">Q34. What port does the app
+use?</h3>
+<p><strong>A.</strong> Default Gradio port is <strong>7860</strong>. Can
+be changed with <code>demo.launch(server_port=8080)</code>.</p>
+<hr />
+<h2 id="error-handling-in-the-ui">10. Error Handling in the UI</h2>
+<h3 id="q35.-how-does-the-app-handle-a-failed-model-load">Q35. How does
+the app handle a failed model load?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>feature_extractor, model, device <span class="op">=</span> model_utils.load_model(model_name)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> model <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="va">None</span>, <span class="va">None</span>, <span class="va">None</span>, <span class="st">&quot;Error loading model.&quot;</span></span></code></pre></div>
+<p>Returns an error string to the JSON output, and <code>None</code> for
+all visual outputs. The Gradio UI shows blank image boxes and the error
+message.</p>
+<h3 id="q36.-how-is-no-safe-path-found-displayed">Q36. How is “No Safe
+Path Found” displayed?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb25"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> enable_path <span class="kw">and</span> path_coords <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    draw <span class="op">=</span> PIL.ImageDraw.Draw(hud_image)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    draw.text((<span class="dv">20</span>, <span class="dv">20</span>), <span class="st">&quot;No Safe Path Found&quot;</span>, fill<span class="op">=</span>(<span class="dv">255</span>, <span class="dv">0</span>, <span class="dv">0</span>))</span></code></pre></div>
+<p>Red text is drawn directly onto the HUD image at coordinates (20,
+20). This happens when pathfinding was enabled but the algorithm
+couldn’t find a valid path (cost too high or no safe pixels).</p>
+<h3
+id="q37.-what-happens-if-the-user-enters-invalid-json-in-the-mapping-editor">Q37.
+What happens if the user enters invalid JSON in the mapping editor?</h3>
+<p><strong>A.</strong> The bare <code>except</code> clause catches
+<code>json.JSONDecodeError</code> and silently falls back to
+<code>DEFAULT_MAPPING</code>. The app continues processing with default
+safety definitions — no crash, no error shown. A more robust version
+could return a warning message.</p>
+<hr />
+<h2 id="gradio-component-deep-dive">11. Gradio Component Deep Dive</h2>
+<h3 id="q38.-what-is-gr.blocks-vs-gr.interface">Q38. What is
+<code>gr.Blocks</code> vs <code>gr.Interface</code>?</h3>
+<p><strong>A.</strong></p>
+<ul>
+<li><p><strong><code>gr.Interface</code></strong>: Simple wrapper — one
+function, one set of inputs, one set of outputs. Good for single-model
+demos.</p>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>gr.Interface(fn<span class="op">=</span>classify, inputs<span class="op">=</span><span class="st">&quot;image&quot;</span>, outputs<span class="op">=</span><span class="st">&quot;label&quot;</span>).launch()</span></code></pre></div></li>
+<li><p><strong><code>gr.Blocks</code></strong>: Full layout control —
+multiple components, custom arrangement, multiple event handlers,
+accordions, tabs, state management. Our app needs this for its complex
+multi-section layout with accordions and optional features.</p></li>
+</ul>
+<h3
+id="q39.-can-gr.blocks-have-multiple-buttons-with-different-callbacks">Q39.
+Can <code>gr.Blocks</code> have multiple buttons with different
+callbacks?</h3>
+<p><strong>A.</strong> Yes! Each button can have its own
+<code>.click()</code> with different <code>fn</code>,
+<code>inputs</code>, and <code>outputs</code>. Our app uses a single
+button, but you could add separate “Quick Analyze” and “Deep Analyze”
+buttons with different functions.</p>
+<h3 id="q40.-what-is-gr.row-vs-gr.column">Q40. What is
+<code>gr.Row()</code> vs <code>gr.Column()</code>?</h3>
+<p><strong>A.</strong></p>
+<ul>
+<li><code>gr.Row()</code> → Places children <strong>side by
+side</strong> (horizontal layout).</li>
+<li><code>gr.Column()</code> → Places children <strong>stacked</strong>
+(vertical layout).</li>
+</ul>
+<p>In our app:</p>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> gr.Row():                    <span class="co"># Top-level horizontal split</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> gr.Column(scale<span class="op">=</span><span class="dv">1</span>):      <span class="co"># Left column (inputs)</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> gr.Column(scale<span class="op">=</span><span class="dv">2</span>):      <span class="co"># Right column (outputs)</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> gr.Row():            <span class="co"># Sub-row for 3 images side by side</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>            output_hud <span class="op">=</span> gr.Image(...)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>            output_depth <span class="op">=</span> gr.Image(...)</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>            output_mask <span class="op">=</span> gr.Image(...)</span></code></pre></div>
+<h3 id="q41.-what-is-variantprimary-on-the-button">Q41. What is
+<code>variant="primary"</code> on the button?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>run_btn <span class="op">=</span> gr.Button(<span class="st">&quot;Analyze Terrain&quot;</span>, variant<span class="op">=</span><span class="st">&quot;primary&quot;</span>)</span></code></pre></div>
+<p><code>variant="primary"</code> gives the button <strong>highlighted
+styling</strong> (usually colored/bold) to distinguish it as the main
+action. Other options: <code>"secondary"</code> (muted),
+<code>"stop"</code> (red/destructive).</p>
+<hr />
+<h2 id="timing-performance-in-the-frontend">12. Timing &amp; Performance
+in the Frontend</h2>
+<h3 id="q42.-how-is-inference-time-measured">Q42. How is inference time
+measured?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb29"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>start_time <span class="op">=</span> time.time()</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>mask, logits <span class="op">=</span> model_utils.predict_mask(image, (...))</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>end_time <span class="op">=</span> time.time()</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>inference_time_ms <span class="op">=</span> <span class="bu">round</span>((end_time <span class="op">-</span> start_time) <span class="op">*</span> <span class="dv">1000</span>, <span class="dv">2</span>)</span></code></pre></div>
+<p>Uses Python’s <code>time.time()</code> for wall-clock timing. Only
+measures the <strong>segmentation inference</strong> step — not depth,
+pathfinding, or visualization. The time is displayed in W&amp;B logs and
+the stats JSON.</p>
+<h3 id="q43.-what-latency-can-a-user-expect">Q43. What latency can a
+user expect?</h3>
+<p><strong>A.</strong></p>
+<ul>
+<li><strong>B0 on CPU</strong>: ~100–300ms per image.</li>
+<li><strong>B0 on GPU</strong>: &lt;50ms.</li>
+<li><strong>Depth estimation</strong> adds ~200–500ms (CPU) or ~50ms
+(GPU).</li>
+<li><strong>Pathfinding</strong> adds ~50–200ms depending on image
+size.</li>
+<li><strong>3D rendering</strong> adds ~100ms for figure
+generation.</li>
+</ul>
+<p>Total end-to-end with all features on CPU: ~500ms–1.5s.</p>
+<hr />
+<h2 id="credentials-environment">13. Credentials &amp; Environment</h2>
+<h3 id="q44.-how-are-api-keys-managed">Q44. How are API keys
+managed?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb30"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dotenv <span class="im">import</span> load_dotenv</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>load_dotenv()</span></code></pre></div>
+<p><code>python-dotenv</code> reads the <code>.env</code> file at
+startup and sets environment variables. The <code>.env</code> file
+(gitignored) contains:</p>
+<pre><code>WANDB_API_KEY=your_key_here</code></pre>
+<p>W&amp;B automatically reads <code>WANDB_API_KEY</code> from the
+environment. For Hugging Face Spaces, keys are set as <strong>Space
+Secrets</strong> in the Settings UI.</p>
+<h3 id="q45.-what-is-.env.example">Q45. What is
+<code>.env.example</code>?</h3>
+<p><strong>A.</strong> A template file (committed to git) showing what
+environment variables are needed, without real values:</p>
+<pre><code>WANDB_API_KEY=your_key_here
+HF_TOKEN=optional_if_needed</code></pre>
+<p>Users copy it to <code>.env</code> and fill in their real keys. The
+<code>.env</code> file is in <code>.gitignore</code> to prevent
+accidental credential leaks.</p>
+<hr />
+<h2 id="rapid-fire">14. Rapid Fire</h2>
+<h3 id="q46.-what-python-version-is-required">Q46. What Python version
+is required?</h3>
+<p><strong>A.</strong> Python 3.10+ (as per README badge).</p>
+<h3 id="q47.-how-many-input-components-does-the-ui-have">Q47. How many
+input components does the UI have?</h3>
+<p><strong>A.</strong> <strong>10</strong> — 1 image, 2 dropdowns, 2
+sliders, 3 checkboxes, 1 code editor, 1 button.</p>
+<h3 id="q48.-how-many-output-components">Q48. How many output
+components?</h3>
+<p><strong>A.</strong> <strong>6</strong> — 3 images, 1 plot, 1 label, 1
+JSON viewer.</p>
+<h3 id="q49.-what-does-demo.queue-return">Q49. What does
+<code>demo.queue()</code> return?</h3>
+<p><strong>A.</strong> Returns the same <code>demo</code> object
+(chainable), so you can write <code>demo.queue().launch()</code>.</p>
+<h3 id="q50.-can-gradio-handle-file-uploads-other-than-images">Q50. Can
+Gradio handle file uploads other than images?</h3>
+<p><strong>A.</strong> Yes — <code>gr.File</code>,
+<code>gr.Audio</code>, <code>gr.Video</code> etc. Our app only uses
+<code>gr.Image</code>.</p>
+<h3 id="q51.-what-is-the-title-parameter-in-gr.blocks">Q51. What is the
+<code>title</code> parameter in <code>gr.Blocks</code>?</h3>
+<p><strong>A.</strong> Sets the <strong>browser tab title</strong>:
+<code>gr.Blocks(title="Terrain Safety Analysis")</code> → the tab reads
+“Terrain Safety Analysis”.</p>
+<h3 id="q52.-how-is-the-heading-added-to-the-ui">Q52. How is the heading
+added to the UI?</h3>
+<p><strong>A.</strong></p>
+<div class="sourceCode" id="cb33"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>gr.Markdown(<span class="st">&quot;# 🛡️ Terrain Safety Analysis with SegFormer (v2)&quot;</span>)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>gr.Markdown(<span class="st">&quot;Upload a terrain image to analyze Safe vs Hazard regions boundaries.&quot;</span>)</span></code></pre></div>
+<p><code>gr.Markdown</code> renders markdown text in the UI. The
+<code>#</code> creates an H1 heading. Supports emojis, bold, links,
+etc.</p>
+<h3 id="q53.-can-users-interact-with-the-3d-plot">Q53. Can users
+interact with the 3D plot?</h3>
+<p><strong>A.</strong> Yes — <code>gr.Plot</code> with a Plotly figure
+supports <strong>rotation, zoom, pan, and hover tooltips</strong>
+natively in the browser. No extra code needed.</p>
+<h3 id="q54.-what-happens-if-wb-is-not-configured">Q54. What happens if
+W&amp;B is not configured?</h3>
+<p><strong>A.</strong> The <code>wandb.init()</code> call fails
+gracefully, <code>INFERENCE_TABLE</code> stays <code>None</code>, and
+<code>log_inference_to_wandb()</code> returns immediately when
+<code>wandb.run is None</code>. The app works perfectly without W&amp;B
+— logging is entirely optional.</p>
+<h3 id="q55.-how-would-you-add-a-new-model-variant-to-the-dropdown">Q55.
+How would you add a new model variant to the dropdown?</h3>
+<p><strong>A.</strong> Add one line to the <code>MODELS</code>
+dictionary:</p>
+<div class="sourceCode" id="cb34"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>MODELS <span class="op">=</span> {</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;SegFormer B0 (Fast)&quot;</span>: <span class="st">&quot;nvidia/segformer-b0-finetuned-ade-512-512&quot;</span>,</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;SegFormer B2 (Balanced)&quot;</span>: <span class="st">&quot;nvidia/segformer-b2-finetuned-ade-512-512&quot;</span>,</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;SegFormer B5 (Accurate)&quot;</span>: <span class="st">&quot;nvidia/segformer-b5-finetuned-ade-640-640&quot;</span>,  <span class="co"># NEW</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>The dropdown automatically picks up the new entry. No other code
+changes needed thanks to the data-driven design.</p>
+</body>
+</html>
