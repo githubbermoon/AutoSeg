@@ -1,0 +1,22 @@
+name: Sync to Hugging Face Hub
+on:
+  push:
+    branches: [master, main]
+
+jobs:
+  sync-to-hub:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          lfs: true
+      - name: Push to Hub
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          # Replace with your Space ID (username/space-name)
+          # You can also use a GitHub Secret for this if you prefer
+          SPACE_ID: pranjal00/AutoSeg-Demo
+        run: |
+          git remote add space https://pranjal00:$HF_TOKEN@huggingface.co/spaces/$SPACE_ID
+          git push --force space main
