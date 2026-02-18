@@ -18,12 +18,19 @@ jobs:
           # You can also use a GitHub Secret for this if you prefer
           SPACE_ID: pranjal00/AutoSeg-Demo
         run: |
-          # Filter out heavy files (documentation, config) before pushing to Space
-          rm -rf documentation/ config/
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
-          git add .
-          git commit -m "chore: Filter heavy files for HF Space deployment" || echo "Nothing to commit"
 
+          # Create fresh orphan branch to drop history of heavy files
+          git checkout --orphan space-deploy
+
+          # Remove heavy files (documentation, config)
+          rm -rf documentation/ config/
+
+          # Stage and commit
+          git add .
+          git commit -m "deploy: Sync to HF Space (Clean)"
+
+          # Push to HF Space (Force overwrite)
           git remote add space https://pranjal00:$HF_TOKEN@huggingface.co/spaces/$SPACE_ID
-          git push --force space HEAD:main
+          git push --force space space-deploy:main
