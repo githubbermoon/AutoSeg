@@ -2,7 +2,7 @@ import os
 import torch
 import numpy as np
 from PIL import Image, ImageOps
-from transformers import SegformerFeatureExtractor, SegformerForSemanticSegmentation, pipeline
+from transformers import SegformerImageProcessor, SegformerForSemanticSegmentation, pipeline
 import wandb
 import json
 import cv2
@@ -33,15 +33,15 @@ def load_model(model_name="nvidia/segformer-b0-finetuned-ade-512-512"):
     
     print(f"Loading model: {model_name}...")
     try:
-        feature_extractor = SegformerFeatureExtractor.from_pretrained(model_name)
+        processor = SegformerImageProcessor.from_pretrained(model_name)
         model = SegformerForSemanticSegmentation.from_pretrained(model_name)
         
         device = "cuda" if torch.cuda.is_available() else "cpu"
         model.to(device)
         model.eval()
         
-        MODEL_CACHE[model_name] = (feature_extractor, model, device)
-        return feature_extractor, model, device
+        MODEL_CACHE[model_name] = (processor, model, device)
+        return processor, model, device
     except Exception as e:
         print(f"Error loading model {model_name}: {e}")
         return None, None, None
@@ -99,9 +99,9 @@ def predict_mask(image, model_data):
         pred_seg: class-ID mask (numpy)
         logits: raw logits tensor (for confidence analysis)
     """
-    feature_extractor, model, device = model_data
+    processor, model, device = model_data
     
-    inputs = feature_extractor(images=image, return_tensors="pt")
+    inputs = processor(images=image, return_tensors="pt")
     inputs = {k: v.to(device) for k, v in inputs.items()}
     
     with torch.no_grad():
