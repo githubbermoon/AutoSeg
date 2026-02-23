@@ -51,15 +51,15 @@ MODELS = {
 
 # --- Core Logic ---
 
-def process_image(image, model_key, opacity, mapping_json_str, enable_depth, enable_path, show_3d, depth_model_size, depth_opacity):
+def process_image(image, opacity, mapping_json_str, enable_depth, enable_path, show_3d, max_range, rover_width, camera_hfov):
     if image is None:
-        return None, None, None, None, None, "Please upload an image.", None
+        return None, None, None, None, "Please upload an image.", None
         
-    # 1. Load Model
-    model_name = MODELS[model_key]
+    # 1. Load Model (B2 - Balanced)
+    model_name = MODELS["SegFormer B2 (Balanced)"]
     feature_extractor, model, device = model_utils.load_model(model_name)
     if model is None:
-         return None, None, None, "Error loading model."
+         return None, None, None, None, "Error loading model.", None
 
     # 2. Parse Mapping
     try:
@@ -85,22 +85,22 @@ def process_image(image, model_key, opacity, mapping_json_str, enable_depth, ena
     depth_overlay = None # New Output
     
     if enable_depth or enable_path:
-        # Load logic (lazy)
-        d_model_size = "base" if "Base" in depth_model_size else "small"
-        depth_pipe = model_utils.load_depth_model(d_model_size)
+        # Load depth model (Small)
+        depth_pipe = model_utils.load_depth_model("small")
         
         # Inference
         if depth_pipe:
             depth_map_norm = model_utils.estimate_depth(image, depth_pipe)
+        
         # Pathfinding
         if enable_path and depth_map_norm is not None:
-             path_coords = model_utils.compute_path(safety_mask, depth_map_norm)
+             path_coords = model_utils.compute_path(safety_mask, depth_map_norm, rover_width_m=rover_width, max_range=max_range, camera_hfov_deg=camera_hfov)
         elif enable_path: # Path enabled but depth failed or disabled -> use mask only
-             path_coords = model_utils.compute_path(safety_mask, None)
+             path_coords = model_utils.compute_path(safety_mask, None, rover_width_m=rover_width, max_range=max_range, camera_hfov_deg=camera_hfov)
 
         # Create Depth Overlay if depth enabled (Now including path!)
         if enable_depth and depth_map_norm is not None:
-            depth_overlay = model_utils.create_depth_overlay(image, depth_map_norm, opacity=depth_opacity, path_coords=path_coords)
+            depth_overlay = model_utils.create_depth_plotly(image, depth_map_norm, max_range=max_range, path_coords=path_coords)
 
     # 6. Overlays
     hud_image = model_utils.create_hud(image, safety_mask, opacity=opacity, path_coords=path_coords)
@@ -158,11 +158,6 @@ def create_demo():
                 input_image = gr.Image(type="pil", label="Input Image")
                 
                 with gr.Accordion("Settings", open=True):
-                    model_selector = gr.Dropdown(
-                        choices=list(MODELS.keys()), 
-                        value="SegFormer B0 (Fast)", 
-                        label="Model Version"
-                    )
                     opacity_slider = gr.Slider(0, 1, value=0.4, label="HUD Opacity")
                     
                 with gr.Accordion("Class Mapping (JSON)", open=False):
@@ -174,24 +169,25 @@ def create_demo():
                 
                 # Advanced Options
                 with gr.Accordion("Advanced Features", open=True):
-                    with gr.Row():
-                        enable_depth = gr.Checkbox(label="Enable Depth", value=False)
-                        depth_size = gr.Dropdown(["Small (Fast)", "Base (High Quality)"], value="Small (Fast)", label="Depth Model")
-                    
-                    depth_opacity = gr.Slider(0, 1, value=0.5, label="Depth Overlay Opacity")
+                    enable_depth = gr.Checkbox(label="Enable Depth", value=False)
                     
                     with gr.Row():
                         enable_path = gr.Checkbox(label="Enable Pathfinding", value=False)
                         show_3d = gr.Checkbox(label="Show 3D View", value=False)
+                
+                with gr.Accordion("Rover Settings", open=False):
+                    max_range_slider = gr.Slider(5, 200, value=50, step=5, label="Max Visible Range (meters)")
+                    rover_width_slider = gr.Slider(0.1, 2.0, value=0.45, step=0.05, label="Rover Width (meters)")
+                    camera_hfov_slider = gr.Slider(30, 120, value=35, step=5, label="Camera HFOV (degrees)")
                 
                 run_btn = gr.Button("Analyze Terrain", variant="primary")
             
             with gr.Column(scale=2):
                 with gr.Row():
                     output_hud = gr.Image(label="HUD Prediction (with Path)", type="pil")
-                    output_depth = gr.Image(label="Depth Overlay", type="pil") # NEW
                     output_mask = gr.Image(label="Raw Mask", type="pil")
                 
+                output_depth = gr.Plot(label="Depth Map (Hover for Distance)")
                 output_3d = gr.Plot(label="3D Terrain View")
                 
                 score_display = gr.Label(label="Safety Score")
@@ -199,7 +195,7 @@ def create_demo():
                 
         run_btn.click(
             process_image,
-            inputs=[input_image, model_selector, opacity_slider, mapping_editor, enable_depth, enable_path, show_3d, depth_size, depth_opacity],
+            inputs=[input_image, opacity_slider, mapping_editor, enable_depth, enable_path, show_3d, max_range_slider, rover_width_slider, camera_hfov_slider],
             outputs=[output_hud, output_depth, output_mask, output_json, score_display, output_3d]
         )
         

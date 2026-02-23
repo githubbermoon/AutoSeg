@@ -7,7 +7,7 @@ import wandb
 import json
 import cv2
 import skimage.graph
-from scipy.ndimage import gaussian_filter
+from scipy.ndimage import gaussian_filter, binary_dilation
 import plotly.graph_objects as go
 from PIL import ImageDraw, ImageFont
 
@@ -15,7 +15,7 @@ from PIL import ImageDraw, ImageFont
 MODEL_CACHE = {}
 
 # Revised Defaults (Mountain moved to Hazard)
-SAFE_LABELS_DEFAULT = ["grass", "road", "dirt", "floor", "path", "vegetation", "earth", "field", "plant"]
+SAFE_LABELS_DEFAULT = ["grass", "road", "dirt", "floor", "path", "vegetation", "earth", "field", "plant", "sand", "ground"]
 HAZARD_LABELS_DEFAULT = ["rock", "water", "sea", "river", "lake", "pool", "waterfall", "boulder", "cliff", "person", "vehicle", "car", "truck", "bus", "train", "motorcycle", "bicycle", "snow", "ice", "mountain", "hill"]
 
 COLORS = {
@@ -55,8 +55,8 @@ def load_depth_model(model_size="small"):
     if cache_key in MODEL_CACHE:
         return MODEL_CACHE[cache_key]
     
-    # Map to HF Hub IDs
-    model_id = "depth-anything/Depth-Anything-V2-Small-hf" if model_size == "small" else "depth-anything/Depth-Anything-V2-Base-hf"
+    # Map to HF Hub IDs — using Metric-Outdoor variants for actual meter output
+    model_id = "depth-anything/Depth-Anything-V2-Metric-Outdoor-Small-hf" if model_size == "small" else "depth-anything/Depth-Anything-V2-Metric-Outdoor-Base-hf"
     
     print(f"Loading depth model: {model_id}...")
     try:
@@ -70,27 +70,38 @@ def load_depth_model(model_size="small"):
 
 def estimate_depth(image, pipe):
     """
-    Runs monocular depth estimation.
-    Returns: normalized depth map (0..1, numpy array)
+    Runs monocular depth estimation using Depth Anything V2 Metric-Outdoor.
+    Returns: depth map in meters (numpy float32 array).
+             Higher values = farther away.
     """
     if pipe is None:
         return None
     
-    # Inference
+    # Inference — metric model returns depth in meters
     depth_out = pipe(image)
-    depth_image = depth_out["depth"] # PIL Image
     
-    # Convert to numpy and normalize
-    depth_np = np.array(depth_image)
-    depth_min = depth_np.min()
-    depth_max = depth_np.max()
-    
-    if depth_max - depth_min > 0:
-        depth_norm = (depth_np - depth_min) / (depth_max - depth_min)
+    # Use 'predicted_depth' tensor (actual meters) instead of 'depth' PIL (quantized 0-255)
+    if "predicted_depth" in depth_out:
+        depth_tensor = depth_out["predicted_depth"]
+        # Could be a torch tensor or numpy array
+        if hasattr(depth_tensor, 'numpy'):
+            depth_np = depth_tensor.squeeze().cpu().numpy().astype(np.float32)
+        else:
+            depth_np = np.array(depth_tensor, dtype=np.float32).squeeze()
     else:
-        depth_norm = np.zeros_like(depth_np, dtype=np.float32)
-        
-    return depth_norm
+        # Fallback to PIL depth image
+        depth_np = np.array(depth_out["depth"], dtype=np.float32)
+    
+    print(f"[Depth] range: {depth_np.min():.2f}m - {depth_np.max():.2f}m, shape: {depth_np.shape}")
+    return depth_np
+
+def depth_to_metric(depth_map, max_range=50.0):
+    """
+    Returns depth in meters. With the Metric-Outdoor model, depth_map
+    is already in meters, so this is a pass-through.
+    max_range is kept for API compatibility but is unused with metric models.
+    """
+    return depth_map.astype(np.float32)
 
 def predict_mask(image, model_data):
     """
@@ -188,21 +199,88 @@ def refine_safety_mask(safety_mask, depth_map):
         
     return refined_mask
 
-def compute_path(safety_mask, depth_map=None):
+def _dilate_hazard_for_rover(safety_mask, depth_map, rover_width_m=0.45, max_range=50.0, camera_hfov_deg=35.0):
+    """
+    Dilates the hazard mask per-row to account for rover physical width.
+    Uses pinhole camera FOV geometry for accurate perspective scaling:
+        physical_width_at_distance = 2 * distance * tan(hfov/2)
+        pixels_per_meter = image_width / physical_width_at_distance
+    
+    camera_hfov_deg: Horizontal Field of View in degrees.
+    
+    Returns: A new safety_mask where safe pixels too close to hazards
+             (for the rover to fit) are reclassified as hazard.
+    """
+    import math
+    
+    h, w = safety_mask.shape
+    dilated = safety_mask.copy()
+    
+    # Precompute FOV half-angle tangent
+    hfov_rad = math.radians(camera_hfov_deg)
+    tan_half_fov = math.tan(hfov_rad / 2.0)
+    
+    if depth_map is None:
+        # No depth info: uniform dilation with a conservative ~2% image width
+        rover_half_px = max(1, int(w * 0.02))
+        hazard_binary = (safety_mask != 1).astype(np.uint8)
+        kernel = np.ones((1, 2 * rover_half_px + 1), dtype=np.uint8)
+        dilated_hazard = cv2.dilate(hazard_binary, kernel, iterations=1)
+        dilated[dilated_hazard == 1] = 2
+        return dilated
+    
+    # Resize depth if needed
+    if depth_map.shape != (h, w):
+        depth_map = cv2.resize(depth_map, (w, h))
+    
+    hazard_binary = (safety_mask != 1).astype(np.uint8)
+    
+    for row in range(h):
+        # Metric depth: values are already in meters
+        distance_m = depth_map[row, :].mean()
+        distance_m = max(distance_m, 0.3)  # Clamp to avoid near-zero
+        
+        # Pinhole camera: physical width visible at this distance
+        physical_width_m = 2.0 * distance_m * tan_half_fov
+        
+        # Pixels per meter at this distance
+        ppm = w / physical_width_m
+        
+        rover_half_px = int((rover_width_m / 2.0) * ppm)
+        rover_half_px = max(1, min(rover_half_px, w // 4))  # Clamp to sane range
+        
+        # Dilate this row horizontally
+        if rover_half_px > 0:
+            row_data = hazard_binary[row, :]
+            kernel_1d = np.ones(2 * rover_half_px + 1, dtype=np.uint8)
+            dilated_row = np.convolve(row_data, kernel_1d, mode='same')
+            dilated_row = (dilated_row > 0).astype(np.uint8)
+            dilated[row, dilated_row == 1] = 2
+    
+    return dilated
+
+def compute_path(safety_mask, depth_map=None, rover_width_m=0.0, max_range=50.0, camera_hfov_deg=35.0):
     """
     Computes a safe path from bottom-center to top-center.
     Uses 'skimage.graph.route_through_array'.
     Cost: Safe=1, Hazard=200. 
     If depth provided, adds penalty for steep gradients.
+    If rover_width_m > 0, dilates hazard mask to ensure the rover can physically fit.
     """
     h, w = safety_mask.shape
     
+    # Rover-dimension-aware dilation (if rover width specified)
+    effective_mask = safety_mask
+    if rover_width_m > 0:
+        effective_mask = _dilate_hazard_for_rover(
+            safety_mask, depth_map, rover_width_m, max_range, camera_hfov_deg
+        )
+    
     # Cost Map
-    cost_map = np.ones_like(safety_mask, dtype=np.float32)
+    cost_map = np.ones_like(effective_mask, dtype=np.float32)
     # Safe (1) -> cost 1
     # Hazard (2) -> cost 200 (Harder Soft Cost)
-    # 50 was too low, allowed climbing mountains. 200 encourages finding the LONG way around.
-    cost_map[safety_mask != 1] = 200.0 
+    cost_map[effective_mask != 1] = 200.0 
     
     # Depth penalty (Slope)
     if depth_map is not None:
@@ -223,11 +301,8 @@ def compute_path(safety_mask, depth_map=None):
     start = (h - 1, w // 2)
     
     # Goal Strategy: Find the highest (min row) 'Safe' pixel
-    # If no safe pixels, default to top center
-    safe_indices = np.argwhere(safety_mask == 1)
+    safe_indices = np.argwhere(effective_mask == 1)
     if len(safe_indices) > 0:
-        # Sort by row (ascending)
-        # Pick the one with min row
         min_row_idx = np.argmin(safe_indices[:, 0])
         end = tuple(safe_indices[min_row_idx])
     else:
@@ -238,24 +313,15 @@ def compute_path(safety_mask, depth_map=None):
     cost_map[end] = 1.0
     
     try:
-        # route_through_array finds min cost path
         indices, weight = skimage.graph.route_through_array(
             cost_map, start, end, fully_connected=True, geometric=True
         )
-        indices = np.array(indices).T # (2, N) -> (row_coords, col_coords)
+        indices = np.array(indices).T
         
-        # Smooth path (simple moving average)
-        # Separate y, x
         path_y = indices[0]
         path_x = indices[1]
         
-        # Check if path is valid (cost shouldn't be too high)
-        # If mean cost per step is > 500, we probably walked through hazard
-        # Check if path is valid (cost shouldn't be too high)
-        # If mean cost per step is > 500, we probably walked through hazard
-        # Relaxed check: just return whatever path we found but maybe warn?
-        # For visualization, showing a "dangerous" path is better than nothing if user asked for it.
-        # But let's keep it strict-ish: if > 800 (mostly hazard), fail.
+        # If mean cost per step is > 800 (mostly hazard), fail.
         if weight / len(path_y) > 800:
             return None
             
@@ -313,42 +379,6 @@ def create_hud(image, safety_mask, opacity=0.4, path_coords=None):
         
     return out_img
 
-def create_depth_overlay(image, depth_map, opacity=0.5):
-    """
-    Creates a heatmap overlay of the depth map on the original image.
-    Red/Orange=Close (1.0), Blue/Purple=Far (0.0).
-    """
-    if depth_map is None:
-        return image
-        
-    image_np = np.array(image)
-    h, w = image_np.shape[:2]
-    
-    if depth_map.shape != (h, w):
-        depth_map = cv2.resize(depth_map, (w, h))
-        
-    # Apply colormap
-    # depth_map is 0..1. 1=Near usually in standard depth estimation? 
-    # Depth Anything V2: RELATIVE depth. 
-    # Usually we want to verify: High value = Close? 
-    # Let's assume High=Close for Red.
-    depth_uint8 = (depth_map * 255).astype(np.uint8)
-    
-    # TURBO or JET. Jet: Blue=Low, Red=High.
-    heatmap = cv2.applyColorMap(depth_uint8, cv2.COLORMAP_TURBO)
-    heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB) # OpenCV is BGR
-    
-    out_img = Image.fromarray(blended)
-    
-    # Draw Path if exists
-    if path_coords:
-        draw = ImageDraw.Draw(out_img)
-        # Draw thick blue line
-        # Use Cyan (0, 255, 255) for high contrast on Turbo heatmap
-        draw.line(path_coords, fill=(0, 255, 255), width=5)
-    
-    return out_img
-
 def create_depth_overlay(image, depth_map, opacity=0.5, path_coords=None):
     """
     Creates a heatmap overlay of the depth map on the original image.
@@ -364,27 +394,137 @@ def create_depth_overlay(image, depth_map, opacity=0.5, path_coords=None):
     if depth_map.shape != (h, w):
         depth_map = cv2.resize(depth_map, (w, h))
         
-    # Apply colormap
-    # depth_map is 0..1. 1=Near usually in standard depth estimation? 
-    # Depth Anything V2: RELATIVE depth. 
-    depth_uint8 = (depth_map * 255).astype(np.uint8)
+    # Normalize to 0-255 for colormap (metric depth → relative for visualization)
+    d_min, d_max = depth_map.min(), depth_map.max()
+    if d_max - d_min > 0:
+        depth_norm = (depth_map - d_min) / (d_max - d_min)
+    else:
+        depth_norm = np.zeros_like(depth_map)
+    depth_uint8 = (depth_norm * 255).astype(np.uint8)
     
     # TURBO (Blue=Low/Far, Red=High/Near)
     heatmap = cv2.applyColorMap(depth_uint8, cv2.COLORMAP_TURBO)
-    heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB) # OpenCV is BGR
+    heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)
     
-    # Blend with original
     blended = cv2.addWeighted(image_np, 1 - opacity, heatmap, opacity, 0)
-    
     out_img = Image.fromarray(blended)
     
-    # Draw Path if exists
     if path_coords:
         draw = ImageDraw.Draw(out_img)
-        # Draw thick Cyan line
         draw.line(path_coords, fill=(0, 255, 255), width=5)
     
     return out_img
+
+def create_depth_plotly(image, depth_map, max_range=50.0, path_coords=None):
+    """
+    Creates an interactive Plotly heatmap of depth overlaid on the original image.
+    Hover shows approximate distance in meters.
+    """
+    import base64
+    from io import BytesIO
+    
+    if depth_map is None:
+        return None
+        
+    image_np = np.array(image)
+    h, w = image_np.shape[:2]
+    
+    if depth_map.shape != (h, w):
+        depth_map = cv2.resize(depth_map, (w, h))
+    
+    # Convert depth to metric distance (higher value = farther)
+    depth_meters = depth_to_metric(depth_map, max_range)
+    
+    # Downsample for performance
+    stride = max(1, min(h, w) // 300)
+    depth_ds = depth_meters[::stride, ::stride]
+    ds_h, ds_w = depth_ds.shape
+    
+    # Pre-blend image + heatmap in numpy (so image is always visible)
+    img_small = np.array(image.resize((ds_w, ds_h), Image.LANCZOS))
+    depth_small = depth_map[::stride, ::stride]
+    # Normalize metric depth to 0-255 for colormap visualization
+    d_min, d_max = depth_small.min(), depth_small.max()
+    if d_max - d_min > 0:
+        depth_vis = (depth_small - d_min) / (d_max - d_min)
+    else:
+        depth_vis = np.zeros_like(depth_small)
+    depth_uint8 = (depth_vis * 255).astype(np.uint8)
+    heatmap = cv2.applyColorMap(depth_uint8, cv2.COLORMAP_TURBO)
+    heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)
+    
+    # Blend: 70% original image + 30% heatmap
+    blended = cv2.addWeighted(img_small, 0.5, heatmap, 0.5, 0)
+    
+    fig = go.Figure()
+    
+    # Show the blended image as the main visual
+    fig.add_trace(
+        go.Image(z=np.flipud(blended), hoverinfo='skip')
+    )
+    
+    # Auto-compute max distance from actual metric depth data
+    actual_max = float(np.ceil(depth_ds.max()))
+    actual_max = max(actual_max, 1.0)  # at least 1m
+    
+    # Invisible heatmap on top purely for hover distance readout
+    fig.add_trace(
+        go.Heatmap(
+            z=np.flipud(depth_ds),
+            colorscale=[[0, 'rgba(0,0,0,0)'], [1, 'rgba(0,0,0,0)']],  # Fully transparent
+            zmin=0,
+            zmax=actual_max,
+            opacity=0,
+            hovertemplate='Distance: ~%{z:.1f}m<extra></extra>',
+            colorbar=dict(
+                title=dict(text="Distance (m)", side='right'),
+                ticksuffix='m'
+            ),
+            showscale=True,
+            colorbar_tickvals=[0, actual_max*0.25, actual_max*0.5, actual_max*0.75, actual_max],
+        )
+    )
+    
+    # Override the colorbar to show Turbo colors (since the trace itself is invisible)
+    fig.data[1].update(
+        colorscale='Turbo_r',
+        colorbar=dict(
+            title=dict(text="Distance (m)", side='right'),
+            ticksuffix='m'
+        )
+    )
+    # Keep the trace invisible but colorbar visible
+    fig.data[1].opacity = 0
+    
+    # Draw path if exists
+    if path_coords:
+        path_arr = np.array(path_coords)
+        path_x = path_arr[:, 0] / stride
+        path_y = (h - path_arr[:, 1]) / stride
+        
+        fig.add_trace(
+            go.Scatter(
+                x=path_x,
+                y=path_y,
+                mode='lines',
+                line=dict(color='cyan', width=3),
+                name='Rover Path',
+                hoverinfo='skip'
+            )
+        )
+    
+    fig.update_layout(
+        title="Depth Map — Hover for Distance",
+        xaxis=dict(visible=False, range=[0, ds_w]),
+        yaxis=dict(visible=False, range=[0, ds_h], scaleanchor='x'),
+        margin=dict(l=10, r=10, t=40, b=10),
+        paper_bgcolor='black',
+        plot_bgcolor='black',
+        font=dict(color='white'),
+        autosize=True
+    )
+    
+    return fig
 
 def compute_stats(mask, safety_mask, id2label, upsampled_logits=None):
     """
@@ -444,8 +584,8 @@ def create_3d_terrain(image, safety_mask, depth_map, path_coords=None):
         return None
 
     # 1. Downsample for Performance (Mesh is heavy!)
-    # Stride of 4 is good for web rendering. 1 = full resolution (slow).
-    stride = 4 
+    # Stride of 2 for better detail (gaps between rocks). Use 4 if too slow.
+    stride = 2 
     
     # Resize depth/mask to image if needed first (though usually they match)
     h, w = image.size[1], image.size[0]
