@@ -9,3 +9,29 @@ model_cache/
 .env
 .ipynb_checkpoints/
 config/
+node_modules/
+package.json
+package-lock.json
+
+# Temporary helper scripts
+build_ch1.py
+build_ch2.py
+build_report.py
+get_ajit.py
+read_pdf.py
+safe_replace.py
+patch_footer.py
+patch_appendix.py
+ajit_parsed.txt
+pip_list.txt
+
+# Friend's reports (not our project)
+documentation/ajit report.pdf
+
+# Intermediate docx chapter drafts
+Report_Chapter_1.docx
+Report_Chapter_2.docx
+MCA_ProjectReport_ContentPages*.docx
+
+# Mermaid source (PNGs are pushed instead)
+*.mmd
